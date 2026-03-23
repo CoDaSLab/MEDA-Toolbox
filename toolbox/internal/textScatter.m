@@ -138,7 +138,6 @@ if ~isempty(elabel)
 
     for ii=1:length(texti)
         i = texti(ii);
-        suffx = length(char(strtrim(elabel(i,1))))+1;
         indt = [1:(ii-1) (ii+1):length(texti)];
         diffst = (bdata(texti(indt),:)-bdata(i,:))./[deltax/sqrt(4) deltay/sqrt(3)]; 
         dist_vect = sqrt(sum(diffst.^2, 2));
@@ -160,15 +159,19 @@ if ~isempty(elabel)
             valign = 'top';
         end
 
-        ax(2) = max(ax(2), posx + deltax*suffx/60);
-        ax(4) = max(ax(4), posy + deltay*2/40);
-
         if any(strcmp(plottype,{'zaxis','zshape'}))
-            text(posx, posy, mult(i), strtrim(elabel(i,1)),'VerticalAlignment',valign, 'HorizontalAlignment',halign,'FontSize', 12);
+            t = text(posx, posy, mult(i), strtrim(elabel(i,1)),'VerticalAlignment',valign, 'HorizontalAlignment',halign,'FontSize', 12, 'Interpreter', 'none');
         elseif strcmp(plottype,'zsize')
-            text(posx, posy, ord_classes(i), strtrim(elabel(i,1)),'VerticalAlignment',valign, 'HorizontalAlignment',halign,'FontSize', 12);
+            t = text(posx, posy, ord_classes(i), strtrim(elabel(i,1)),'VerticalAlignment',valign, 'HorizontalAlignment',halign,'FontSize', 12, 'Interpreter', 'none');
         else
-            text(posx, posy, strtrim(elabel(i,1)),'VerticalAlignment',valign, 'HorizontalAlignment',halign,'FontSize', 12);
+            t = text(posx, posy, strtrim(elabel(i,1)),'VerticalAlignment',valign, 'HorizontalAlignment',halign,'FontSize', 12, 'Interpreter', 'none');
         end
+        
+        ext = t.Extent; 
+        text_right_edge = ext(1) + ext(3);
+        text_top_edge   = ext(2) + ext(4);
+        ax(2) = max(ax(2), text_right_edge);
+        ax(4) = max(ax(4), text_top_edge);
+        axis(ax);
     end
 end
