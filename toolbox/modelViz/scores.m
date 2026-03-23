@@ -87,10 +87,10 @@ function figH = scores(model,varargin)
 % scores(model,'ObsTest',test);
 %
 % Coded by: Jose Camacho (josecamacho@ugr.es)
-% Last modification: 10/Dec/2025
-% Dependencies: Matlab R2017b, MEDA v1.10
+% Last modification: 02/Mar/2026
+% Dependencies: Matlab R2017b, MEDA v1.12
 %
-% Copyright (C) 2025  University of Granada, Granada
+% Copyright (C) 2026  University of Granada, Granada
 % 
 % This program is free software: you can redistribute it and/or modify
 % it under the terms of the GNU General Public License as published by
@@ -146,12 +146,15 @@ else
     K = L;
 end
 
-if isempty(label) 
+if isempty(label)
+    le = true;
     if plotcal
         label = [1:N 1:L]; 
     else
         label = 1:L;
     end
+else
+    le = false;
 end
 if isempty(classes)
     if plotcal
@@ -185,7 +188,16 @@ else
 end
 
 if isfield(model,'scoresV')
-    T = model.scoresV;
+    %T = model.scoresV;
+    [T,ord2] = unique(model.scoresV,'rows','stable');
+    if plotcal        
+        if le 
+            label = [1:length(ord2)+L]';
+        else
+            label = [label(ord2);label(N+1:K)];
+        end
+        classes = [classes(ord2);classes(N+1:K)];
+    end
 end
 
 if ~isempty(test)

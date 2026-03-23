@@ -112,8 +112,8 @@ function ascao = asca(parglmo)
 %
 %
 % Coded by: Jose Camacho (josecamacho@ugr.es)
-% Last modification: 29/Jan/2026
-% Dependencies: Matlab R2017b, MEDA v1.10
+% Last modification: 22/Mar/2026
+% Dependencies: Matlab R2017b, MEDA v1.12
 %
 % Copyright (C) 2026  University of Granada, Granada
 %
@@ -157,19 +157,13 @@ for factor = 1 : ascao.nFactors
         ascao.factors{factor}.scoresV = (xf+ascao.residuals)*model.loads;
     else
         ascao.factors{factor}.scoresV = xf;
-        nL = [];
         for n = 1:length(ascao.factors{factor}.refF) 
             ascao.factors{factor}.scoresV = ascao.factors{factor}.scoresV + ascao.factors{ascao.factors{factor}.refF(n)}.matrix;
-            nL = [nL ascao.nLevels(ascao.factors{factor}.refF(n))];
         end
         for n = 1:length(ascao.factors{factor}.refI) 
             ascao.factors{factor}.scoresV = ascao.factors{factor}.scoresV + ascao.interactions{ascao.factors{factor}.refI(n)}.matrix;
-            nL = [nL prod(ascao.nLevels(ascao.interactions{ascao.factors{factor}.refI(n)}.factors))];
         end
-        nL = mean(nL);
-        mar = size(ascao.factors{factor}.scoresV,1)/nL;
-        ascao.factors{factor}.scoresV = ascao.factors{factor}.scoresV(1:mar:end,:)*model.loads;
-        ascao.factors{factor}.scores = ascao.factors{factor}.scores(1:mar:end,:);
+        ascao.factors{factor}.scoresV = ascao.factors{factor}.scoresV*model.loads;
     end
 end
 
@@ -194,15 +188,10 @@ for interaction = 1 : ascao.nInteractions
         ascao.interactions{interaction}.scoresV = (xf+ascao.residuals)*model.loads;
     else
         ascao.interactions{interaction}.scoresV = xf;
-        nL = [];
         for n = 1:length(ascao.interactions{interaction}.refI) 
             ascao.interactions{interaction}.scoresV = ascao.interactions{interaction}.scoresV + ascao.interactions{ascao.interactions{interaction}.refI(n)}.matrix;
-            nL = [nL prod(ascao.nLevels(ascao.interactions{ascao.interactions{interaction}.refI(n)}.factors))];
         end
-        nL = mean(nL);
-        mar = size(ascao.factors{factor}.scoresV,1)/nL;
-        ascao.interactions{interaction}.scoresV = ascao.interactions{interaction}.scoresV(1:mar:end,:)*model.loads;
-        ascao.factors{factor}.scores = ascao.factors{factor}.scores(1:mar:end,:);
+        ascao.interactions{interaction}.scoresV = ascao.interactions{interaction}.scoresV*model.loads;
     end
 end
 

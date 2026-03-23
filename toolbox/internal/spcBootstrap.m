@@ -6,18 +6,23 @@ function err = spcBootstrap(theta,PCreps,varargin)
 % value between 0 and 1, or the maximum deviation where the input
 % percentile is 'max'
 %
-% Related routines: parglm, asca, apca, parglmVS, parglmMC, createDesign,
+% err = spcBootstrap(theta,PCreps)   % minimum call
+% 
+% See also: parglm, asca, apca, parglmVS, parglmMC, createDesign,
 % powercurve
 %
-% err = spcBootstrap(PCreps)   % minimum call
-% 
 %
 % INPUTS
 %
-% PCreps: and M x N x O array where M are the incremental deltas from SPCS,
+% Theta: M x 1 array with incremental deltas
+%
+% PCreps: an M x N x O array where M are the incremental deltas from SPCS,
 % N are the number of factors/interactions to simulate, and O are the
 % permutations used in the analysis for each level. A boolean array of 0 or
 % 1.
+%
+%
+% Optional INPUTS (parameters):
 %
 % bstrpReps: the number of bootstrap sampling routines to take place for
 % uncertainty estimation.
@@ -27,7 +32,10 @@ function err = spcBootstrap(theta,PCreps,varargin)
 % prcntl: a value between 0 and 1 to specify the uncertainty level. For
 % example: prcntl = 0.05 will bound the results between the bottom 0.05 and
 % top 0.95 observable combinations of the data for uncertainty estimation.
-% Set to 'max' for the maximum and minimum observable differences.
+% Set to 'max' for the maximum and minimum observable differences. 
+% @Pepe: ideally, prcntl = 0.05 should use 2.5 and 97.5 percentiles
+%
+% @Pepe: There are other two plotting options left undocumented
 %
 %
 % OUTPUTS
@@ -54,9 +62,9 @@ function err = spcBootstrap(theta,PCreps,varargin)
 % spcBootstrap(PCreps,100,true,0.05,false,['A','B']);
 %
 % coded by: Michael Sorochan Armstorng (mdarmstr@ugr.es)
-% last modification: 20/Nov/2024
+% last modification: 14/Mar/2026
 %
-% Copyright (C) 2024  University of Granada, Granada
+% Copyright (C) 2026  University of Granada, Granada
 %
 % This program is free software: you can redistribute it and/or modify
 % it under the terms of the GNU General Public License as published by
@@ -124,11 +132,13 @@ end
 if strcmp(prcntl,'max')
     mins = min(PCuncert,[],3);
     maxs = max(PCuncert,[],3);
-    avgs = mean(PCuncert,3);
+    %avgs = mean(PCuncert,3); @Pepe: substitute by the real thing
+    avgs = sum(PCreps,3) ./ noPerms;
 else
-    mins = quantile(PCuncert,prcntl,3);
-    maxs = quantile(PCuncert,1-prcntl,3);
-    avgs = mean(PCuncert,3);
+    mins = quantile(PCuncert,prcntl/2,3); % @Pepe: prctile corrected 
+    maxs = quantile(PCuncert,1-prcntl/2,3);
+    %avgs = mean(PCuncert,3); @Pepe: substitute by the real thing
+    avgs = sum(PCreps,3) ./ noPerms;
 end
 
 curve1 = maxs;

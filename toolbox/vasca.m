@@ -49,10 +49,10 @@ function vascao = vasca(parglmoVS,siglev)
 % end
 %
 % Coded by: Jose Camacho (josecamacho@ugr.es)
-% Last modification: 10/Aug/2025
-% Dependencies: Matlab R2017b, MEDA v1.9
+% Last modification: 22/Mar/2026
+% Dependencies: Matlab R2017b, MEDA v1.12
 %
-% Copyright (C) 2025  University of Granada, Granada
+% Copyright (C) 2026  University of Granada, Granada
 %
 % This program is free software: you can redistribute it and/or modify
 % it under the terms of the GNU General Public License as published by
@@ -93,6 +93,7 @@ for factor = 1 : vascao.nFactors
         [inds,ord] = sort(ind);
         xf = vascao.factors{factor}.matrix(:,inds);
         model = pcaEig(xf,'PCs',1:rank(xf));
+        model.var = model.var*sum(sum(vascao.effects(inds,:)))/sum(vascao.effects(inds,factor));
     
         fnames = fieldnames(model);
         for n = 1:length(fnames)
@@ -136,10 +137,13 @@ for interaction = 1 : vascao.nInteractions
         ind = parglmoVS.ordInteractions(interaction,1:M(end));
         [inds,ord] = sort(ind);
         xf = vascao.interactions{interaction}.matrix(:,inds);
+        modV = sum(vascao.effects(interaction+vascao.nFactors,inds));
         for factor = 1 : length(vascao.interactions{1}.factors)
             xf = xf + vascao.factors{factor}.matrix(:,inds);
+            modV = modV + sum(vascao.effects(factor,inds));
         end
         model = pcaEig(xf,'PCs',1:rank(xf));
+        model.var = model.var*sum(sum(vascao.effects(inds,:)))/modV;
     
         fnames = fieldnames(model);
         for n = 1:length(fnames)
