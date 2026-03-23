@@ -31,7 +31,7 @@ function ax = textScatter(fig_h,bdata,varargin)
 %   minimum distance with other points where a label is allowed to be 
 %   visualized. For a value of 0, all labels are printed, while for a 
 %   large value only uncluttered labels are printed. By default Inf is 
-%   chosen, where only indices as visualized. 
+%   chosen, where only indices is visualized. 
 %
 %
 % OUTPUTS:
@@ -120,47 +120,55 @@ ax = axis;
 deltax = (ax(2)-ax(1)); 
 deltay = (ax(4)-ax(3)); 
 
+%bdata = bdata + deltax/100*randn(size(bdata,1),1)*deltay/100*randn(1,size(bdata,2));
 c = 0.01; % bias with text
 if ~isempty(elabel)
+    texti = []; 
     for i=1:N
-        suffx = length(char(strtrim(elabel(i,1))))+1;
         ind = [1:(i-1) (i+1):size(bdata,1)];
         
-        dxM = (bdata(ind,1)-bdata(i,1))/(deltax*suffx/60); % app. 60 characters in the x-axis
-        dxM(dxM<0) = Inf;
-        dxM(dxM>1) = Inf;
-        dyM = (bdata(ind,2)-bdata(i,2))/(deltay*2/40); % app. 40 characters in the y-axis
-        dyM(dyM<-1) = Inf;
-        dyM(dyM>1) = Inf;
-        
-        d = dxM.^2+dyM.^2;
-        ind2 = find(min(d)==d,1);
-        if isempty(ind2) || dxM(ind2) > blur || dyM(ind2)==Inf  || isempty(ind)
-            posx = bdata(i,1) + c*deltax;
-            posy = bdata(i,2) + c*deltay;
-            halign = 'left';
-            valign = 'bottom';
-            % Label position based on cuadrant
-            if bdata(i,1) < 0
-                posx = bdata(i,1) - c*deltax;
-                halign = 'right';
-            end
-            if bdata(i,2) < 0
-                posy = bdata(i,2) - c*deltay;
-                valign = 'top';
-            end
-            ax(2) = max(ax(2), posx + deltax*suffx/60);
-            ax(4) = max(ax(4), posy + deltay*2/40);
+        diffs = (bdata(ind,:)-bdata(i,:))./[deltax/sqrt(4) deltay/sqrt(3)]; 
+        dist_vec = sqrt(sum(diffs.^2, 2));
+        knn = find(dist_vec < blur);
+        extr = [length(find(diffs(knn,1)>= 0)) length(find(diffs(knn,1)<= 0)) length(find(diffs(knn,2)>= 0)) length(find(diffs(knn,2)<= 0))]; % none right, none left, none up, none down 
+        if blur==0 | length(knn)==0 | any(extr==0) % either no blur control activated, no close neighbour or a extreme point
+            texti(end+1) = i;
+        end
+    end
 
-            if any(strcmp(plottype,{'zaxis','zshape'}))
-                text(posx, posy, mult(i), strtrim(elabel(i,1)),'VerticalAlignment',valign, 'HorizontalAlignment',halign,'FontSize', 12);
-            elseif strcmp(plottype,'zsize')
-                text(posx, posy, ord_classes(i), strtrim(elabel(i,1)),'VerticalAlignment',valign, 'HorizontalAlignment',halign,'FontSize', 12);
-            else
-                text(posx, posy, strtrim(elabel(i,1)),'VerticalAlignment',valign, 'HorizontalAlignment',halign,'FontSize', 12);
-            end
+    for ii=1:length(texti)
+        i = texti(ii);
+        suffx = length(char(strtrim(elabel(i,1))))+1;
+        indt = [1:(ii-1) (ii+1):length(texti)];
+        diffst = (bdata(texti(indt),:)-bdata(i,:))./[deltax/sqrt(4) deltay/sqrt(3)]; 
+        dist_vect = sqrt(sum(diffst.^2, 2));
+        knnt = find(dist_vect < blur);
+
+        posx = bdata(i,1) + c*deltax;
+        posy = bdata(i,2) + c*deltay;
+        halign = 'left';
+        valign = 'bottom';
+        bias = -mean(diffst(knnt,:),1);
+
+        % Label position based on cuadrant & interference
+        if bias(1) < 0 
+            posx = bdata(i,1) - c*deltax;
+            halign = 'right';
+        end
+        if bias(2) < 0
+            posy = bdata(i,2) - c*deltay;
+            valign = 'top';
+        end
+
+        ax(2) = max(ax(2), posx + deltax*suffx/60);
+        ax(4) = max(ax(4), posy + deltay*2/40);
+
+        if any(strcmp(plottype,{'zaxis','zshape'}))
+            text(posx, posy, mult(i), strtrim(elabel(i,1)),'VerticalAlignment',valign, 'HorizontalAlignment',halign,'FontSize', 12);
+        elseif strcmp(plottype,'zsize')
+            text(posx, posy, ord_classes(i), strtrim(elabel(i,1)),'VerticalAlignment',valign, 'HorizontalAlignment',halign,'FontSize', 12);
         else
-            suffx(i) = 0;
+            text(posx, posy, strtrim(elabel(i,1)),'VerticalAlignment',valign, 'HorizontalAlignment',halign,'FontSize', 12);
         end
     end
 end

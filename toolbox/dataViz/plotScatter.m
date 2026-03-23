@@ -55,7 +55,7 @@ function figH = plotScatter(bdata,varargin)
 %   minimum distance with other points where a label is allowed to be 
 %   visualized. For a value of 0, all labels are printed, while for a 
 %   large value only uncluttered labels are printed. When Inf is chosen, 
-%   only indices as visualized (by default 1).
+%   only indices is visualized (by default 1).
 %
 % 'Color': Choose a color for your data.
 %   - 'hsv' for hsv palette
