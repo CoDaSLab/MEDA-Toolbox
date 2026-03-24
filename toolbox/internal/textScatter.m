@@ -170,7 +170,9 @@ if ~isempty(elabel)
         ext = t.Extent; 
         text_right_edge = ext(1) + ext(3);
         text_top_edge   = ext(2) + ext(4);
+        ax(1) = min(ax(1), ext(1));
         ax(2) = max(ax(2), text_right_edge);
+        ax(3) = min(ax(3), ext(2));
         ax(4) = max(ax(4), text_top_edge);
         axis(ax);
     end
