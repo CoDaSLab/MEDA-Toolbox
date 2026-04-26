@@ -55,6 +55,12 @@ function [Dst,Qst,Dstt,Qstt,UCLd,UCLq] = mspcPca(x,varargin)
 %       false: no plots.
 %       true: plot (default)
 %
+% 'BlurIndex': [1x1] to avoid blur when adding labels. It reflects the
+%   minimum distance with other points where a label is allowed to be 
+%   visualized. For a value of 0, all labels are printed, while for a 
+%   large value only uncluttered labels are printed. When Inf is chosen, 
+%   only indices is visualized (by default 1).
+%
 %
 % OUTPUTS:
 %
@@ -88,9 +94,9 @@ function [Dst,Qst,Dstt,Qstt,UCLd,UCLq] = mspcPca(x,varargin)
 %
 %
 % coded by: Jose Camacho (josecamacho@ugr.es)
-% last modification: 15/Jan/2025
+% last modification: 22/Apr/2026
 %
-% Copyright (C) 2025  University of Granada, Granada
+% Copyright (C) 2026  University of Granada, Granada
 % 
 % This program is free software: you can redistribute it and/or modify
 % it under the terms of the GNU General Public License as published by
@@ -126,6 +132,7 @@ addParameter(p,'PValueD',0.01);
 addParameter(p,'PValueQ',0.01);  
 addParameter(p,'LimType',0);   
 addParameter(p,'Plot',true); 
+addParameter(p,'BlurIndex',1);
 parse(p,varargin{:});
 
 % Extract inputs from inputParser for code legibility
@@ -140,6 +147,7 @@ pvalueD = p.Results.PValueD;
 pvalueQ = p.Results.PValueQ;
 limtype = p.Results.LimType;
 plot = p.Results.Plot;
+blur = p.Results.BlurIndex;
 
 L = size(test, 1);
 
@@ -189,6 +197,7 @@ assert (isequal(size(classes), [K 1]), 'Dimension Error: parameter ''ObsClass'' 
 if ~isempty(pvalueD), assert (isequal(size(pvalueD), [Ld 1]), 'Dimension Error: parameter ''PValueD'' must be 1-by-1. Type ''help %s'' for more info.', routine(1).name); end;
 if ~isempty(pvalueQ), assert (isequal(size(pvalueQ), [Lq 1]), 'Dimension Error: parameter ''PValueQ'' must be 1-by-1. Type ''help %s'' for more info.', routine(1).name); end;
 assert (isequal(size(limtype), [1 1]), 'Dimension Error: parameter ''LimType'' must be 1-by-1. Type ''help %s'' for more info.', routine(1).name);
+if ~isempty(blur), assert (isequal(size(blur), [1 1]), 'Dimension Error: parameter ''BlurIndex'' must be 1-by-1. Type ''help %s'' for more info.', routine(1).name); end
 
 % Validate values of input data
 assert (isempty(find(pcs<0)) && isequal(fix(pcs), pcs), 'Value Error: parameter ''PCs'' must contain positive integers. Type ''help %s'' for more info.', routine(1).name);
@@ -257,7 +266,9 @@ if plot
         plotVec(Dsttt, 'EleLabel', label, 'ObsClass', classes, 'XYLabel', {[],'D-st'}, 'LimCont', UCLd);
         plotVec(Qsttt, 'EleLabel', label, 'ObsClass', classes, 'XYLabel', {[],'Q-st'}, 'LimCont', UCLq);
     elseif strcmp(plottype,'Scatter')
-        plotScatter([Dsttt,Qsttt], 'EleLabel',label, 'ObsClass',classes, 'XYLabel',{'D-st','Q-st'}, 'LimCont',{UCLd,UCLq});
+        plotScatter([Dsttt,Qsttt], 'EleLabel',label, 'ObsClass',classes, 'XYLabel',{'D-st','Q-st'}, 'LimCont',{UCLd,UCLq}, 'BlurIndex', blur);
+        xlim([0 inf]);
+        ylim([0 inf]);
     end
 end
 
