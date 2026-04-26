@@ -137,10 +137,10 @@ for interaction = 1 : vascao.nInteractions
         ind = parglmoVS.ordInteractions(interaction,1:M(end));
         [inds,ord] = sort(ind);
         xf = vascao.interactions{interaction}.matrix(:,inds);
-        modV = sum(vascao.effects(interaction+vascao.nFactors,inds));
+        modV = sum(vascao.effects(inds,interaction+vascao.nFactors));
         for factor = 1 : length(vascao.interactions{1}.factors)
             xf = xf + vascao.factors{factor}.matrix(:,inds);
-            modV = modV + sum(vascao.effects(factor,inds));
+            modV = modV + sum(vascao.effects(inds,factor));
         end
         model = pcaEig(xf,'PCs',1:rank(xf));
         model.var = model.var*sum(sum(vascao.effects(inds,:)))/modV;
